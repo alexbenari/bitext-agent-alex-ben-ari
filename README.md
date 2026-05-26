@@ -1,36 +1,40 @@
 # Bitext Customer Service Data Analyst Agent
 
-Task 1 implementation for `docs/assignment 3.pdf`: a LangGraph-based ReAct analyst agent for the Bitext customer-support dataset.
+A LangGraph-based ReAct analyst agent for the Bitext customer-support dataset, with persistent conversation and user-profile memory, a FastMCP tool server, and Streamlit integration.
 
 ## Setup
 
-Use Python 3.10 or newer. LangChain 1.x does not install on Python 3.9.
+### Initial Setup
+
+These commands create a clean environment, install pinned project dependencies, set the
+required Nebius Token Factory key, and start the CLI agent:
+
+Use Python 3.10, 3.11, 3.12, or 3.13. Python 3.11 was used for development and testing.
+Python 3.14 is not currently supported by the dependency stack. The commands below use
+Python 3.11; if you already have another supported version installed, replace `py -3.11`
+with that version, for example `py -3.12`.
 
 ```powershell
-python --version
-py -3.10 -m venv .venv
+git clone https://github.com/alexbenari/bitext-agent-alex-ben-ari.git
+cd bitext-agent-alex-ben-ari
+py -0p
+py -3.11 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 python -m pip install -e .
-```
-
-Set your Nebius Token Factory key before running the CLI agent:
-
-```powershell
 $env:NEBIUS_API_KEY = "your-token"
-```
-
-Optional overrides:
-
-```powershell
-$env:NEBIUS_BASE_URL = "https://api.tokenfactory.nebius.com/v1/"
-$env:NEBIUS_MODEL = "nvidia/Nemotron-3-Nano-Omni"
-```
-
-## Run The CLI
-
-```powershell
 python main.py
+```
+
+By default, the app loads the bundled dataset at `data/bitext_customer_support.csv`.
+Because this file is checked into the repo, normal runs do not need a Hugging Face
+download.
+
+If the CSV is missing, the app downloads it from Hugging Face and writes it to the
+configured dataset path. To point the app at another local copy, use:
+
+```powershell
+python main.py --dataset-path path\to\bitext_customer_support.csv
 ```
 
 To print CLI usage without starting the agent:
@@ -39,11 +43,13 @@ To print CLI usage without starting the agent:
 python main.py --usage
 ```
 
-The CLI prints a generated conversation session id after the welcome message:
+### Agent interaction
+When started the agent displays a welcome message and waits for instructions.
+The agent's replies are written to the CLI in white and tool calls, reasoning and graph outputs are written to the CLI in grey to differentiate them from the actual conversation.
 
-```text
-This conversation's session id is: session-... You can use it to resume it anytime after it ends.
-```
+### Session Management
+
+Each conversation is identified and saved using a unique session id generated at the beginning of the conversation. The CLI prints the conversation session id after the agent's welcome message.
 
 To resume a saved conversation after exiting and restarting the app, pass that id with
 `--session`:
@@ -51,31 +57,8 @@ To resume a saved conversation after exiting and restarting the app, pass that i
 ```powershell
 python main.py --session session-...
 ```
-
-Long-term user profile memory is keyed separately from the conversation session. By
-default the CLI uses the local `default` profile. To use a named profile:
-
-```powershell
-python main.py --user alex
-```
-
-The CLI prints the active profile at startup. When the agent notices durable user facts
-or preferences after a successful dataset conversation, it proposes profile additions and
-asks for approval before saving them. You can approve, discard, or edit the proposed
-facts. Ask `What do you remember about me?` to inspect the current profile.
-
-If the requested session id is not found, the CLI exits and asks you to verify the id or
+If the requested session id is not found, the CLI exits and asks the user to verify the id or
 start a new conversation without `--session`.
-
-The first run downloads the CSV from Hugging Face into `data/bitext_customer_support.csv`. To use an already-downloaded file:
-
-```powershell
-python main.py --dataset-path data/bitext_customer_support.csv
-```
-
-The CLI prints the router decision, tool calls, tool observations, and final answer.
-
-Each question also writes a structured JSONL run log under `logs/runs/`. These logs are intended for regression analysis and debugging; they include the run id, route decision, tool call arguments, tool result size, error type, latency, and token usage when the model provider returns it. The `logs/` directory is ignored by Git.
 
 Conversation memory is persisted with LangGraph checkpoints in a local SQLite database
 at `data/checkpoints.sqlite` by default. Override this path with:
@@ -84,6 +67,22 @@ at `data/checkpoints.sqlite` by default. Override this path with:
 $env:BITEXT_CHECKPOINT_DB = "data/my_checkpoints.sqlite"
 ```
 
+### User Profile
+
+Long-term user profile memory is saved separately from the conversation session, keyed by username.
+By default, the CLI uses the `default` profile. To use a named profile, pass `--user`:
+
+```powershell
+python main.py --user alex
+```
+
+The CLI prints the active profile at startup. When the agent notices durable user facts
+or preferences after a successful dataset conversation, it proposes profile additions and
+asks for approval before saving them. The user can approve, discard, or edit the proposed
+facts.
+
+A user can also ask to view their profile using phrasing like `What do you remember about me?`, `show me my user profile`, and similar requests.
+
 User profile facts are stored in a separate local SQLite database at
 `data/user_profiles.sqlite` by default. Override this path with:
 
@@ -91,12 +90,13 @@ User profile facts are stored in a separate local SQLite database at
 $env:BITEXT_PROFILE_DB = "data/my_profiles.sqlite"
 ```
 
-Checkpoint and profile database files are local runtime artifacts and are ignored by Git.
+### CLI Output and Logs
 
-## Run The Streamlit UI
+The CLI prints the router decision, tool calls, tool observations, and final answer.
 
-The bonus Streamlit UI runs the same LangGraph agent in a browser-based chat interface.
-It requires `NEBIUS_API_KEY` because it calls the LLM-backed router and analyst graph.
+Each question also writes a structured JSONL run log under `logs/runs/`. These logs are intended for regression analysis and debugging; they include the run id, route decision, tool call arguments, tool result size, error type, latency, and token usage when the model provider returns it.
+
+## Streamlit UI
 
 From the project root:
 
@@ -104,7 +104,7 @@ From the project root:
 streamlit run streamlit_app.py
 ```
 
-If Streamlit is not on your shell path, use the virtual environment executable:
+If Streamlit is not on the shell path, use the virtual environment executable:
 
 ```powershell
 .\.venv\Scripts\streamlit.exe run streamlit_app.py
@@ -125,13 +125,7 @@ The UI displays the final answer in chat and keeps router, tool-call, observatio
 error events under each assistant message's run-details expander. The raw trace JSON is
 available from the same panel for debugging.
 
-## Run The MCP Server
-
-Task 3 exposes the deterministic dataset-analysis tools through FastMCP. The MCP server
-does not call the LLM and does not require `NEBIUS_API_KEY`; it only needs the dataset
-CSV or network access for the first Hugging Face download.
-
-### Start The Server
+## MCP Server
 
 From the project root, start the MCP server with:
 
@@ -142,7 +136,17 @@ python -m bitext_mcp.server
 The server uses FastMCP's default local transport, so MCP clients can launch it as a
 Python process.
 
-### Connect A Client In Code
+Exposed MCP tools:
+
+- `get_dataset_schema`
+- `filter_dataset`
+- `count_rows`
+- `show_examples`
+- `examples_by_category`
+- `intent_distribution`
+- `collect_response_patterns`
+
+### Connect a Client in Code
 
 For stdio-based MCP, the client usually launches the server process and talks to it over
 stdin/stdout. This example connects to `bitext_mcp/server.py` and calls `count_rows`:
@@ -169,7 +173,7 @@ Expected output with the bundled dataset:
 {"count": 2992}
 ```
 
-### Run The Sample Client
+### Run the Sample Client
 
 The repo includes a runnable sample client that starts the MCP server, confirms the
 connection, calls the MCP client's `list_tools()` method, prints the available tools,
@@ -181,34 +185,26 @@ Run it from the project root:
 python -m examples.mcp_client_example
 ```
 
-Exposed MCP tools:
+## Model Choice
 
-- `get_dataset_schema`
-- `filter_dataset`
-- `count_rows`
-- `show_examples`
-- `examples_by_category`
-- `intent_distribution`
-- `collect_response_patterns`
+- The agent uses `nvidia/Nemotron-3-Nano-Omni` for both routing and ReAct analysis. I chose the same model for both roles for simplicity. `nvidia/Nemotron-3-Nano-Omni` is a reasoning model with tool calling, which is necessary for the ReAct analyst but not strictly required for the router. A smaller model could probably handle routing, but routing queries are short, this model is inexpensive, and price and latency differences are not significant in this exercise. If this were a production agent with significant usage, I would optimize the router to use a simpler model.
+- Profile extraction uses `Qwen/Qwen3.5-397B-A17B`. This task is mostly conservative information extraction and structured output, not deep multi-step reasoning. I chose a strong instruction-following text model that can avoid over-inferring personal facts. In this exercise, latency is not a major concern. In production, I would explore faster variants such as `Qwen/Qwen3.5-397B-A17B-fast`.
 
 ## Architecture
 
-The application uses a LangGraph `StateGraph`:
+### Graph structure
+The application uses a LangGraph `StateGraph` with these nodes:
 
-1. `router`: classifies each question as `structured`, `unstructured`, or `out_of_scope` using `nvidia/Nemotron-3-Nano-Omni`.
-2. `decline`: politely rejects out-of-scope questions without using general model knowledge.
-3. `agent`: a LangChain `create_agent` ReAct loop, also using `nvidia/Nemotron-3-Nano-Omni`.
+1. `router`: classifies each question as `structured`, `unstructured`, `profile_info`, or `out_of_scope`.
+2. `decline`: politely rejects out-of-scope questions without answering from the LLM's general knowledge.
+3. `profile_info`: answers profile-inspection questions, such as `What do you remember about me?`, from the persistent user-profile store.
+4. `agent`: runs a LangChain `create_agent` ReAct loop with the dataset tools.
+5. `profile_extractor`: reviews successful conversations and proposes durable user-profile facts extracted from them.
 
-The compiled graph runs with a SQLite checkpointer, keyed by the CLI `--session` value.
-When no session is passed, the CLI creates a unique `session-<uuid>` id for that run and
-prints it so the user can resume the conversation later.
+### Graph flow
+Every question enters through `router`. Out-of-scope questions go to `decline` and then end. Profile-inspection questions go to `profile_info` and then end. Structured and unstructured dataset questions go to `agent`, which can call one or more deterministic dataset tools before producing a final answer. Successful dataset turns then pass through `profile_extractor`; any proposed profile facts are returned to the CLI or UI so the user can approve, edit, or discard them before they are saved. The compiled graph runs with a SQLite checkpointer keyed by the CLI `--session` value, so the same session id resumes the same conversation after a restart. Profile facts are stored separately in SQLite tables keyed by `--user`.
 
-Profile facts are stored separately from conversation checkpoints in SQLite tables keyed
-by `--user`. The router sends profile-inspection questions to a deterministic profile
-node. Successful dataset conversations flow through a profile extraction node using
-`Qwen/Qwen3.5-397B-A17B`, which proposes facts for user approval before they are saved.
-
-The same Nebius Token Factory model is used for routing and generation to match the assignment requirement. Nebius Token Factory is OpenAI-compatible, so the code uses `ChatOpenAI` with `NEBIUS_BASE_URL`.
+If the router model fails or returns invalid structured output, the app returns a technical-problem fallback instead of guessing a route. If the ReAct loop exceeds the configured iteration limit, the agent returns a graceful max-iteration fallback. If the agent fails during live execution, the app emits an error trace event, writes the error status to the JSONL run log when logging is enabled, and returns the same technical-problem fallback. If profile extraction fails, the dataset answer is preserved and the app simply returns no proposed profile facts for that turn.
 
 ## Tools
 
@@ -224,28 +220,10 @@ The agent has deterministic tools over the dataset, each with a Pydantic argumen
 
 ## Prompts
 
-The two reviewable prompts live as Markdown files under `prompts/`:
+The three reviewable prompts live as Markdown files under `prompts/`:
 
 - `prompts/router.md`
 - `prompts/agent_system.md`
+- `prompts/profile_extractor.md`
 
-Both include the dataset category and intent taxonomy from the Bitext dataset card.
-
-## Example Queries
-
-```text
-What categories exist in the dataset?
-How many refund requests did we get?
-Show me 5 examples of the SHIPPING category.
-Summarize how agents respond to complaint intents.
-Show me examples of people wanting their money back.
-What is the distribution of intents in the ACCOUNT category?
-What's the best CRM software for handling complaints?
-Who is the president of France?
-```
-
-## Tests
-
-```powershell
-.\.venv\Scripts\python.exe -m pytest
-```
+The router and agent prompts include the dataset category and intent taxonomy from the Bitext dataset card. The profile-extractor prompt defines the conservative rules for proposing durable user-profile facts.

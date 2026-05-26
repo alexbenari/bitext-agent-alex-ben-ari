@@ -20,6 +20,8 @@ class DatasetSchemaInput(BaseModel):
 
 
 class FilterDatasetInput(BaseModel):
+    """Input for creating a reusable filtered dataset view."""
+
     category: Optional[str] = Field(
         default=None,
         description="Optional dataset category such as REFUND, ACCOUNT, FEEDBACK, or SHIPPING.",
@@ -44,6 +46,8 @@ class FilterDatasetInput(BaseModel):
 
 
 class CountRowsInput(BaseModel):
+    """Input for counting rows directly or from a saved filter."""
+
     filter_id: Optional[str] = Field(
         default=None,
         description="Filter id returned by filter_dataset. Use this after filtering.",
@@ -54,6 +58,8 @@ class CountRowsInput(BaseModel):
 
 
 class ShowExamplesInput(BaseModel):
+    """Input for sampling dataset examples directly or from a saved filter."""
+
     filter_id: Optional[str] = Field(default=None, description="Filter id returned by filter_dataset.")
     category: Optional[str] = Field(default=None, description="Optional category to sample directly.")
     intent: Optional[str] = Field(default=None, description="Optional intent to sample directly.")
@@ -67,6 +73,8 @@ class ShowExamplesInput(BaseModel):
 
 
 class ExamplesByCategoryInput(BaseModel):
+    """Input for sampling examples from every dataset category."""
+
     n_per_category: int = Field(
         default=1,
         ge=1,
@@ -76,12 +84,16 @@ class ExamplesByCategoryInput(BaseModel):
 
 
 class IntentDistributionInput(BaseModel):
+    """Input for computing intent counts over the dataset or a subset."""
+
     filter_id: Optional[str] = Field(default=None, description="Filter id returned by filter_dataset.")
     category: Optional[str] = Field(default=None, description="Optional category to group by intent.")
     text_query: Optional[str] = Field(default=None, description="Optional text query to filter before grouping.")
 
 
 class ResponsePatternsInput(BaseModel):
+    """Input for collecting examples used in qualitative response summaries."""
+
     category: Optional[str] = Field(default=None, description="Optional category to summarize.")
     intent: Optional[str] = Field(default=None, description="Optional intent to summarize.")
     text_query: Optional[str] = Field(default=None, description="Optional text query to summarize.")

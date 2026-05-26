@@ -68,7 +68,7 @@ class BitextAgent:
         self.profile_model = _make_chat_model(
             settings,
             temperature=0.0,
-            max_tokens=1024,
+            max_tokens=10000,
             model_name=PROFILE_EXTRACTION_MODEL,
         )
         self.profile_repository = ProfileRepository(settings.profile_path)

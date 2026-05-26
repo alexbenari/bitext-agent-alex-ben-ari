@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
 
+from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import HumanMessage, SystemMessage
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
@@ -140,7 +141,7 @@ def format_profile_answer(facts: list[ProfileFact]) -> str:
 
 
 def extract_profile_facts(
-    model,
+    model: BaseChatModel,
     *,
     existing_facts: list[ProfileFact],
     user_messages: list[str],

@@ -19,7 +19,10 @@ def build_parser() -> argparse.ArgumentParser:
         "--dataset-path",
         type=Path,
         default=None,
-        help="Optional local CSV path. If omitted, the dataset is downloaded to data/.",
+        help=(
+            "Optional local CSV path. If omitted, uses data/bitext_customer_support.csv "
+            "and downloads it only if that file is missing."
+        ),
     )
     parser.add_argument(
         "--max-iterations",
@@ -46,10 +49,14 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    """Parse command-line arguments for the CLI entry point."""
+
     return build_parser().parse_args(argv)
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Run the CLI and return a process exit code."""
+
     parser = build_parser()
     args = parser.parse_args(argv)
     if args.usage:

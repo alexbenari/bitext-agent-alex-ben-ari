@@ -21,6 +21,8 @@ from bitext_agent.streamlit_ui import (
 
 
 def main() -> None:
+    """Render and run the Streamlit chat application."""
+
     st.set_page_config(page_title="Bitext Dataset Analyst", page_icon=":bar_chart:")
     _render_developer_style()
 

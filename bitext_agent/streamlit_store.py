@@ -19,6 +19,8 @@ class UnknownUiSessionError(RuntimeError):
 
 @dataclass(frozen=True)
 class UiSession:
+    """Stored metadata for one visible Streamlit chat session."""
+
     session_id: str
     created_at: str
     last_used_at: str
@@ -27,6 +29,8 @@ class UiSession:
 
 @dataclass(frozen=True)
 class UiTurn:
+    """One persisted chat turn and its trace events for the Streamlit UI."""
+
     role: str
     content: str
     trace_events: list[dict[str, Any]]
@@ -80,9 +84,20 @@ class StreamlitSessionStore:
     def list_sessions(self) -> list[UiSession]:
         rows = self._connection.execute(
             """
-            SELECT session_id, created_at, last_used_at, title
+            SELECT
+                sessions.session_id,
+                sessions.created_at,
+                sessions.last_used_at,
+                sessions.title,
+                MAX(turns.id) AS last_turn_id
             FROM sessions
-            ORDER BY last_used_at DESC, created_at DESC
+            LEFT JOIN turns ON turns.session_id = sessions.session_id
+            GROUP BY sessions.session_id
+            ORDER BY
+                last_turn_id IS NOT NULL DESC,
+                sessions.last_used_at DESC,
+                last_turn_id DESC,
+                sessions.created_at DESC
             """
         ).fetchall()
         return [_session_from_row(row) for row in rows]

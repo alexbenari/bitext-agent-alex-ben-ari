@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from typing import Any, Literal
 
+from langchain_core.language_models.chat_models import BaseChatModel
 from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, ValidationError
 
 from bitext_agent.error_details import extract_model_response
@@ -46,7 +47,7 @@ class RouterError(RuntimeError):
         self.response_metadata = response_metadata
 
 
-def route_query(model, question: str) -> RouteDecision:
+def route_query(model: BaseChatModel, question: str) -> RouteDecision:
     """Classify a user question with the routing model."""
 
     from langchain_core.messages import HumanMessage, SystemMessage

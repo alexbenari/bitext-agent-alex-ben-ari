@@ -1,4 +1,4 @@
-# Requires Python 3.10 or newer. LangChain 1.x is not published for Python 3.9.
+# Requires Python 3.10 through 3.13.
 python-dotenv>=1.0.1,<2.0.0
 pandas>=2.2.3,<3.0.0
 pydantic>=2.10.0,<3.0.0
