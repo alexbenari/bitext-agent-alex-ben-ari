@@ -1,0 +1,14 @@
+# Requires Python 3.10 or newer. LangChain 1.x is not published for Python 3.9.
+python-dotenv>=1.0.1,<2.0.0
+pandas>=2.2.3,<3.0.0
+pydantic>=2.10.0,<3.0.0
+huggingface-hub>=0.27.0,<1.0.0
+langchain>=1.0.0,<2.0.0
+langchain-core>=1.0.0,<2.0.0
+langchain-openai>=1.0.0,<2.0.0
+langgraph>=1.0.0,<2.0.0
+langgraph-checkpoint-sqlite>=3.1.0,<4.0.0
+langsmith>=0.3.0,<1.0.0
+fastmcp>=2.0.0,<3.0.0
+streamlit>=1.36.0,<2.0.0
+pytest>=8.3.4,<9.0.0

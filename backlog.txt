@@ -1,0 +1,45 @@
+
+porting:
+- Claude Code-native tool names are used (`Read`, `Write`, `Edit`, `Bash`, `Task`,
+   `TodoWrite`, `Skill`)
+- Harness-specific glue lives in adapters
+- env vars, codex dirs, etc.
+- skill
+
+
+
+See the opencode adapter for how to port to codex?
+Read: `domain-modeling` is the smallest, `writing-clean-code` is the largest.
+skills' metadata is in `SKILL_RULES` in `scripts/lint-skills.mjs`:
+   max line count, required section headers, required principle numbers.
+trigger map is in `skills/using-97/SKILL.md` AND the `What's inside` table in `README.md`.
+
+
+
+olxclfakxyqlfgif
+
+I would like you to implement Task 1 in "docs\assignment 3.pdf".
+  - use nvidia/Nemotron-3-Nano-Omni from the Nebius token factory as both the routing and the agent's generation/reasoning model (https://tokenfactory.nebius.com/models?modals=endpoint-details&model-
+  id=nvidia/Nemotron-3-Nano-Omni)
+
+
+Hard questions:
+Which percentage of the cancel_order requests are phrased as a question?
+You: give me an example of 1 item from each category
+Which category in the datsaset has the most instructions?
+
+Router problems:
+Which is the largest category in the dataset? -> out of scope instead of structured
+Which is the largest category in terms of number of cases? -> out of scope instead of structured
+
+*** backlog
+exception -> report stg ok to the user, e.g. try to rephrase it to make your intent clearer
+too many tool calls -> report stg ok to the user, e.g. try to split your questions into two simpler ones or otherwise simplify it
+remove dataset taxinomy from agent prompt?
+
+Build a small mini-eval for agent:
+Verifies questions are:
+- answered
+- answered correctly
+
+test another model?

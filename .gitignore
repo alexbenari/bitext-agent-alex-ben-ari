@@ -1,17 +1,27 @@
 # Python bytecode/cache
-*.pyc
 __pycache__/
+*.py[cod]
+.pytest_cache/
 
 # Virtual environments / installed packages
 .venv/
 venv/
 env/
 ENV/
+*.egg-info/
 
 # Logs
 logs/
 *.log
 
-#data
-data/
-.agents/skills/agents-best-practices/
+# Local Codex/agent workspace configuration
+.codex/
+.agents/skills/
+
+# Runtime databases
+data/checkpoints.sqlite
+data/checkpoints.sqlite-*
+data/user_profiles.sqlite
+data/user_profiles.sqlite-*
+data/streamlit_sessions.sqlite
+data/streamlit_sessions.sqlite-*
